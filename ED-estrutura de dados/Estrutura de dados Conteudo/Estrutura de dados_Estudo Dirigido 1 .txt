@@ -1,0 +1,146 @@
+Respostas:
+
+Parte I – Complexidade - Questões Objetivas (1 a 10)
+1. A análise de algoritmos tem como principal objetivo:
+b) Prever os recursos que o algoritmo necessitará
+
+2. Entre os recursos analisados em um algoritmo, o mais frequentemente medido é:
+b) Tempo de processamento
+
+3. O método empírico de análise de algoritmos apresenta como desvantagem:
+d) Ser inviável para grandes N
+
+4. No método analítico, o tempo de execução de um algoritmo é geralmente representado
+como:
+d) Tempo = O(N)
+
+5. A complexidade de um algoritmo está relacionada a:
+b) Sua eficiência em tempo e/ou memória
+
+6. A análise do pior caso é a mais utilizada porque:
+c) Garante um limite superior do tempo de processamento
+
+7. A notação O (Big O) representa:
+b) A taxa de crescimento assintótica de uma função
+
+8. Se um algoritmo tem expressão T(N) = N2 + 2N, sua complexidade é:
+c) O(N2), n ao quadrado 
+
+9. A regra que define que o tempo de um laço é o tempo da operação multiplicado pelo número
+de iterações é:
+c) Regra da iteração
+
+10. A notação O(1) indica:
+a) Tempo constante
+
+Parte II – Complexidade – Questões subjetivas (11 a 14)
+11. Por que a análise do pior caso é mais utilizada do que a do melhor ou do caso médio?
+ Porque na computação muitas das vezes não será possível cobrir todos os casos, e neste cenário é mais eficiente visar a implementação efetiva e
+ a analise do tempo de execução observando o pior caso, já que uma vez garantido que o pior caso funciona sob um tempo de execução aceitável, então
+ todos os outros tambem irão.
+
+
+12. Diga, com suas palavras, o que significa dizer que um algoritmo tem complexidade O(N2).
+ Que no pior caso, o algoritmo processará o tempo de execução, que determinará a quantidade de operações que serão executadas para um conjunto de dados 
+ de tamanho N vezes N , ou seja analisando pela conhecida notação assintótica ou notação de Landau este algoritmo tem uma ordem quadrática .
+
+13. Considerando o código de busca pelo maior valor em um vetor, explique como são
+determinados o melhor caso, o pior caso e o caso médio de execução.
+ No melhor caso a busca encontra o termo na primeira iteração do laço entao a ordem é constante O(1) no pior caso a busca tem que passar por toda a iteração 
+ do laço para encontrar o elemento neste caso a ordem é  linear O(N), no caso medio cálculo do tempo de processamento exige o prévio conhecimento da 
+ distribuição de probabilidades das diferentes entradas. Na maioria dos casos essa distribuição é desconhecida e freqüentemente é de tratamento matemátic
+ complexo.
+
+
+14. Por que, ao analisar algoritmos, costuma-se ignorar valores pequenos de N e concentrar-se
+em entradas muito grandes?
+ Porque são as entradas grandes que impedem o mal funcnionamento do programa,ao aumentar consideravelmente o tempo de processamento e consequentemente
+ despencar as taxas de eficiencia do programa.
+
+Parte III – Listas Lineares e Listas Sequenciais – Questões objetivas (de 15 a 24)
+
+15. Uma lista linear é caracterizada por:
+b) Ser uma coleção de nós onde cada nó tem um único sucessor
+
+
+16. Um exemplo de estrutura de dados não linear é:
+d) Árvore
+
+17. Em uma lista linear ordenada, os nós estão dispostos:
+a) Em ordem alfabética sempre
+
+18. Em uma lista sequencial, os elementos:
+a) Estão em posições contíguas de memória
+
+19. Em uma lista não ordenada, a inserção de um novo nó normalmente é feita:
+c) No final da lista
+
+20. O algoritmo de busca sequencial possui complexidade:
+b) O(N)
+
+
+21. Na remoção de um item em uma lista não ordenada, o método mais simples consiste em:
+a) Deslocar todos os elementos para a esquerda e decrementar a quantidade de elementos da
+lista
+
+22. Ao remover um nó em uma lista ordenada, o procedimento correto é:
+b) Deslocar os elementos, à direita da remoção, de uma posição à esquerda
+
+
+23. A busca binária só pode ser aplicada quando:
+b) A lista estiver ordenada
+
+24. O número máximo de comparações na busca binária é da ordem de:
+a) O(N)
+
+Parte IV – Listas Lineares e Listas Sequenciais – Questões subjetivas (de 25 a 28)
+
+25. Explique a diferença entre listas lineares e listas não lineares, e dê um exemplo de cada tipo.
+ As listas lineares tem nós que apontam sucessivamente para o proximo e unico nó subsequente, com execeção de seu ultimo nó que finaliza a lista 2 exemplos
+ destes são listas Sequenciais e Listas Encadadas, já as listas não lineares não se restrigem a sequencialidade, podendo apontar para diversos nós exemplos 
+ destas são as Arvores. 
+
+26. Descreva as principais diferenças entre uma lista sequencial e uma lista encadeada,
+destacando vantagens e desvantagens.
+
+Lista Sequencial
+Vantagens:
+Acesso Rápido: Permite acesso direto e de tempo constante (O(1)) a qualquer elemento através do seu índice.
+ Uso de Memória: contiguidade na memória garante que não tenha sobrecarga de memória para armazenar ponteiros 
+ (exceto se for uma implementação dinâmica usando redimensionamento de array). 
+
+Desvantagens:
+ Tamanho Fixo: O tamanho máximo precisa ser conhecido antecipadamente, o que pode levar ao desperdício de memória ou ao esgotamento do espaço (overflow)
+ ou alternativamente precisa ter sua memoria constantemente realocada em tempo de execução o que aumenta a possibilidade de uma sobrecarga de memoria.
+ Inserção/Remoção Lenta: Inserir ou remover elementos no meio da lista exige deslocar todos os elementos seguintes para manter a ordem, o que é uma operação
+ cara (tempo linear, O(n)). 
+
+Lista Encadeada
+Vantagens:
+ Flexibilidade e Dinamismo: Gerencia a memória de forma eficiente, crescendo ou diminuindo conforme a necessidade real, sem desperdício de espaço prealocado e
+ sem a necessidade de realocar o espaço de memoria continuamente.
+ Inserção/Remoção Eficiente: Inserir ou remover elementos (uma vez localizada a posição correta) é muito rápido (tempo constante, O(1), exigindo apenas a 
+ redefinição de ponteiros).
+ Facilidade de Gerenciamento: Facilita operações como fusão ou divisão de listas. 
+
+Desvantagens:
+ Acesso Lento: O acesso a um elemento específico é sequencial e lento (tempo linear, O(n)), porque é preciso percorrer a lista a partir do início.
+ Uso de Memória: Requer memória extra para armazenar os ponteiros em cada nó.
+ Sem Acesso Direto: Não suporta acesso aleatório ou específico por índice. 
+
+
+27. Compare o funcionamento da busca sequencial e da busca binária. Em que situações cada
+uma é mais apropriada?
+ A busca sequencial itera um a um cada nó da lista até encontrar o elemento que está buscando, a busca binária procura sempre no indice da metade da lista
+ repartindo sempre na metade sua mais a direita se maior ou mais a esquerda se for menor que o elemento no "meio" do indice atual, desta forma não precisa 
+ passar por todos os indices e por tanto nunca itera todos os N elementos de uma lista, reduzindo drasticamente seu tempo de busca para listas 
+ expressivamente grandes.Acredito que o uso mais apropriado seja busca sequecial para listas menores e a busca binaria para listas muito grandes.
+
+
+28. Em uma lista ordenada, por que é necessário deslocar os elementos ao remover ou inserir
+um nó? O que isso implica em termos de desempenho?
+ Porque quando se remove ou adiciona o elemento ficam lacunas ou elementos deslocados na lista , por exemplo se existem 5 elementos e 5 nos em uma lista e eu removo 1 a lista passa a ter 4 
+ elementos mas os 5 nos continuam o que deixa uma brecha/falha na ordenação que pode ser preenchia com lixo de memoria atrapalhando assim o 
+ funcionamento do algoritmo, por isso que ao retirar ou adicionar termos em uma lista ordenada é necessario mover todos os outros para que não comprometam a
+ ordenação da lista.Em termos de desempenho significa que é necessario realizar uma tarefa a mais que no pior dos casos move todo os elementos da lista
+ O(N) e aumenta o tempo de execeção o que reduz a efetividade e o desenpenho. 

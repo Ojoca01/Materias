@@ -1,0 +1,38 @@
+Classes wrapper em Java são classes que envolvem tipos de dados primitivos, como int e double, 
+transformando-os em objetos. Elas são usadas para converter primitivos em objetos e vice-versa, 
+permitindo que tipos primitivos sejam usados em estruturas de dados que exigem objetos,
+como as coleções (List, Map), ou para permitir valores nulos, onde primitivos não podem ser.
+
+obs:. em java String é uma classe de vetor de caracteres, por tanto deve sempre ser aconpanhada de inicial maiusculas
+
+Outros métodos úteis de JOptionPane
+Método	Função
+showInputDialog()	Captura dados digitados pelo usuário
+showMessageDialog()	Exibe uma mensagem simples
+showConfirmDialog()	Exibe uma janela com botões "Sim", "Não", "Cancelar"
+showOptionDialog()	Exibe uma janela personalizada com opções definidas
+
+Obs:. tambem da para colocar icones com JOptionPane, usando
+
+JOptionPane.showMessageDialog(null,"testo a ser inserido","Titulo do texto",JOptionPane.nome do icone);
+outros exemplos:.
+String nome = JOptionPane.showInputDialog("Digite seu nome:");
+JOptionPane.showConfirmDialog()
+JOptionPane.showOptionDialog()
+
+Outras operacoes de classe de wrapper para Strings em java(todas fazem parte do kit lang)
+    
+Comparar conteúdo de strings:
+• resp = valor.compareTo(“Baseado em Objetos”);
+
+• Converter String para inteiro:
+• int valor = Integer.parseInt(“112”);
+
+• Converter Inteiro para String:
+• String num = Integer.toString(21);
+
+• Converter String para double:
+• double resp = Double.parseDouble(“3.51”);
+
+• Converter Double para String
+• String num = Double.toString(resp);

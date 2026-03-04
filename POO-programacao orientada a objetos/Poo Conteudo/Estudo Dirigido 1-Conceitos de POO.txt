@@ -1,0 +1,95 @@
+ Estudo Dirigido 1-Conceitos de POO
+
+Parte I
+1- c) Um conjunto de dados e operações com características comuns 
+
+2- b) Uma instância de uma classe
+
+3- b) Dados que representam características de um objeto
+
+4- b) Executar as operações dos objetos
+
+5- c) Alocar memória e fazer outras operações, como inicialização de atributos
+
+6- c) Sua memória interna e valores de atributos
+
+7- b) Sua criação até sua eliminação
+
+8- c) Mensagens
+
+9- b) O nome da mensagem, seus parâmetros e tipo de seu retorno
+
+10- b) Uma classe compartilhe dados e operações de outra hierarquicamente relacionada
+
+11- b) Herança
+
+12- c) Composição
+
+13- c) Combinação de dados e métodos com acesso controlado
+
+14- b) Acesso indevido a dados internos
+
+15- b) Sobrecarga de funções
+
+16- b) No momento da execução
+
+Parte II
+
+17. Explique, com suas próprias palavras, a diferença entre programação estruturada e orientada a objetos.
+
+	A programação estruturada organiza o código em torno de procedimentos e lógica sequencial, enquanto a programação orientada a objetos (POO) organiza o 	código em torno de objetos, que contêm tanto dados (atributos) quanto funções (métodos)
+
+18. Por que se diz que a POO é mais próxima do mundo real?
+
+	Porque em poo são definidos conjuntos de formas que servem como modelo para diversos sistemas e entidades,que são chamadas de classes e definem objetos que representam entidades com comportamentos observaveis ou seja a aplicação da POO tende a correlacionar modelos em proximidade com o mundo real.
+
+19. Dê um exemplo de classe e de objeto, descrevendo seus atributos e métodos.
+
+	 a classe pode ser representada como uma pessoas, os atributos as caracteristicas desta pessoa como altura, peso, cor de cabelo, tipo fisico, idade e os 	métodos representam as ações que a pessoa pode realizar, como se deslocar, envelhecer,  etc...
+
+20. Explique, com suas palavras, 2 vantagens da Programação Orientada a Objetos.
+	
+	Para mim as duas maiores vantagens são:
+	Encapsulamento-> porque deixa o codigo organizado como se fossem gavetas em um arquivo que podem ser abertas de manipuladas com facilidade, alem da 		proteção dos dados,que mostra apenas necessário para a manipulação algoritmica pelo usuário e que tambem auxilia em noçoes pureza e colateralidade do codigo.
+	
+	Herança -> a capacidade de classes filhas utilizarem metodos e atributos de classes mães facilita a manipulação e implementação do codigo uma vez que aumenta consideravelmente o reuso. 
+
+21. Diferencie classe, objeto e instância.
+	
+	Classe-> É o modelo, o protótipo ou a planta para criar objetos. Define os atributos (variáveis) e métodos (comportamentos) que todos os objetos dessa classe terão,por exemplo uma receita de bolo.
+
+	Instância-> É um elemento concreto e específico de uma classe, criado a partir do seu modelo.
+
+	Objeto-> É uma instância de uma classe. É a realização concreta na memória que possui os dados (atributos) e os comportamentos (métodos) definidos pela sua classe.
+
+22. Explique o papel dos construtores e destrutores em uma classe.
+
+ construtores e destrutores são métodos especiais, o construtor inicializa um objeto quando ele é criado, enquanto o destrutor realiza a limpeza necessária quando o objeto é destruído, basicamente alocam e liberam memória para objetos.
+
+23. Descreva uma situação prática em que o encapsulamento facilita a manutenção do
+código.
+	Por exemplo quando ha erro no codigo em um determinado metodo de um determinado objeto e o editor de texto não é capaz de resolver, se o programador(a) conseguir deduzir qual parte do algoritmo poderia gerar aquele erro basta que vá ao local em que este trecho foi encapsulado e corrigi-lo,sem a necessidade de alterar todo o codigo para que entrasse em comformidade com a correção, ou seque ter que buscar o erro linha por linha. 
+
+24. Compare os conceitos de herança e composição, e explique como decidir entre um e outro.
+	Herança permite que uma classe (subclasse) herde atributos e comportamentos de outra classe (superclasse),e a composição constrói classes usando objetos de outras classes, delegando a responsabilidade a esses objetos. Em vez de herdar funcionalidades, a classe "monta" suas capacidades. 
+
+	A principal diferença é a relação que estabelecem: a herança define uma relação do tipo "é um", enquanto a composição define uma relação do tipo "tem um";
+exemplos:.	 um Cachorro é um Animal
+ 		 um Carro tem um Motor
+	
+25. Explique o que é e mostre, com exemplo, como ocorre o polimorfismo por sobrescrita
+(override).
+	É quando uma subclasse herda um metodo de uma superclass mas não usa seu mapeamento original e sim fornece a este metodo sua próprioa implementação interna, isto permite que classes diferentes com os mesmos metodos tenham retornos diferentes.Por exemplo um animal faz um som, eu poderia definir que Animal é uma classe e Cachorro sua subclasse, poderia tambem definir como metodo que animais emitem sons de maneira genérica e dentro da subclasse cachorro emitir o som "Au Au" especificamente.
+
+26. Explique o que é o polimorfismo por sobrecarga (overload).
+
+	É quando dois ou mais métodos são definidos com as mesmas assinatiras e entradas de parmaetros diferentes,isto permite que metodos iguais em nome possam admitir paramentros diferentes.
+
+27. O que significa o termo late binding e por que ele é importante em linguagens
+orientadas a objetos?
+
+	 A late binding/ligação tardia, também conhecida como ligação dinâmica , é um mecanismo de programação onde o método ou propriedade específica a ser chamada é determinada em tempo de execução(interpretação), em vez de em tempo de compilação,é importante porque viabiliza o polimorfismo dinamico que oferece maior flexibilidade para manipulação dos metodos e criação de heranças.
+
+28. Em sua opinião, quais são os principais desafios ao se aplicar o paradigma orientado a objetos em projetos de grande porte?
+
+	A quantidade de atributos, metodos a serem implementados e um pouco a linguagem uma vez que não possuo muita experiencia de uso com linguagens orientadas a objeto.

@@ -1,0 +1,57 @@
+Laços em java : 3 laços principais: do while for
+
+1-> WHILE
+
+while (condição) {
+    // comandos repetidos enquanto a condição for verdadeira
+}
+// exemplo 
+int contador = 1;
+
+while (contador <= 5) {
+    System.out.println("Contagem: " + contador);
+    contador++; // incrementa para evitar loop infinito
+}
+2-> DO WHILE
+
+do {
+    // comandos executados pelo menos uma vez
+} while (condição);
+
+3-> FOR     
+// Estrutura 
+for (inicialização; condição; atualização) {
+    // comandos repetidos
+}
+
+// exemplo 
+for (int i = 1; i <= 5; i++) {
+    System.out.println("Valor de i: " + i);
+}
+ 
+// exemplo de uso com entrada de dados em javax swing/ pane options
+import javax.swing.JOptionPane;
+
+public class ExemploLoops {
+    public static void main(String[] args) {
+        int contador = 1;
+
+        // WHILE
+        while (contador <= 3) {
+            JOptionPane.showMessageDialog(null, "Contador (while): " + contador);
+            contador++;
+        }
+
+        // DO WHILE
+        int numero = 1;
+        do {
+            JOptionPane.showMessageDialog(null, "Contador (do while): " + numero);
+            numero++;
+        } while (numero <= 3);
+
+        // FOR
+        for (int i = 1; i <= 3; i++) {
+            JOptionPane.showMessageDialog(null, "Contador (for): " + i);
+        }
+    }
+}

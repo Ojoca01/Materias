@@ -1,0 +1,27 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Remove elemento de vetor dinamicamente
+int* remocao_em_lista(int *vetor_int, int indice, int *max) {
+    if (indice < 0 || indice >= *max) {
+        printf("Índice inválido!\n");
+        return vetor_int;
+    }
+
+    // Desloca elementos à esquerda
+    for (int i = indice; i < *max - 1; i++) {
+        vetor_int[i] = vetor_int[i + 1];
+    }
+
+    // Diminui tamanho lógico do vetor
+    (*max)--;
+
+    // Opcional: realocar para economizar memória
+    vetor_int = realloc(vetor_int, (*max) * sizeof(int));
+    if (!vetor_int && *max > 0) {
+        printf("Erro ao realocar memória!\n");
+        exit(1);
+    }
+
+    return vetor_int;
+}
