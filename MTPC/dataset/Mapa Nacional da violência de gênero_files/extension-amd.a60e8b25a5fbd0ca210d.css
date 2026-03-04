@@ -1,0 +1,7 @@
+/*!
+ * sense-client@8.133.10
+ *
+ * Copyright(C) 2024 Qlik International AB
+ * All Rights Reserved
+ *
+ */.senseloader-block-ui{background:#fff;display:flex;flex-direction:column;height:100%;justify-content:center;left:0;position:absolute;top:0;width:100%}.senseloader-block-ui,.senseloader-block-ui .senseloader-text{opacity:0;transition:visibility 1s,opacity 1s;visibility:hidden}.senseloader-block-ui .senseloader-text{font-size:18px;font-weight:700;height:22px;margin-left:auto;margin-right:auto;margin-top:14px;position:relative;text-align:center}.senseloader-block-ui .senseloader-button{margin-top:20px}.senseloader-block-ui .senseloader-show,.senseloader-block-ui.senseloader-show{opacity:1;visibility:visible;z-index:1201}.senseloader-icon-pong{height:auto;margin-left:auto;margin-right:auto;overflow:hidden;position:relative;width:200px}.senseloader-icon-pong svg{margin-bottom:14px;max-width:100%}.senseloader-icon-pong .senseloader-pong-progress{animation:senseLoaderPongSideToSide 2s ease-in-out infinite;background-color:#009845;bottom:2px;height:2px;position:absolute;width:50%}@keyframes senseLoaderPongSideToSide{0%,to{transform:translateX(-30%)}50%{transform:translateX(130%)}}.senseloader-icon-disconnected{height:auto;margin-left:auto;margin-right:auto;overflow:hidden;position:relative;width:100px}.senseloader-icon-disconnected svg{margin-bottom:14px;max-width:100%}.suspend-resume-loader{z-index:1200}

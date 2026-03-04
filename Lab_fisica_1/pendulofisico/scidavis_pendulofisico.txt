@@ -1,0 +1,370 @@
+(2*pi)* (( 0.1877+x^2)/(g*x)) ^ 0.5
+
+
+0,7	1,875	0,037	0,0012
+0,6	1,852	0,036	0,0012
+0,4	1,77	0,031	0,01
+0,3	1,865	0,024	0,008
+0,2	2,0191	0,044	0,015
+
+[terça-feira, 11 de março de 2025 20:10:30 Hora oficial do Brasil	Plot: ''Graph1'']
+Non-linear fit of dataset: Table1_T(s), using function: (2*pi)* (( 0.1877+x^2)/(g*x)) ^ 0.5
+Y standard errors: Unknown
+Scaled Levenberg-Marquardt algorithm with tolerance = 0,0001
+From x = 0,2 to x = 0,7
+g  = 10,8 +/- 0,112
+--------------------------------------------------------------------------------------
+Chi^2 = 0,00191
+R^2 = 1
+---------------------------------------------------------------------------------------
+Iterations = 6
+Status = success
+---------------------------------------------------------------------------------------
+
+
+
+Nesta experiência, estudamos o movimento periódico de um pêndulo físico, que consiste em um corpo rígido oscilando ao redor de um eixo. O pêndulo simples é um caso específico do pêndulo físico.
+
+Quando há um deslocamento angular, um torque de restituição atua sobre o corpo para trazê-lo à posição de equilíbrio. O torque é dado por:
+𝜏⃗ = −𝑑⃗ × 𝑃⃗⃗
+τ=−dmgsinθ
+Para pequenos deslocamentos angulares (
+𝜃
+<
+15
+∘
+θ<15 
+∘
+ ), temos:
+
+𝜏
+=
+−
+𝑑
+𝑚
+𝑔
+𝜃
+τ=−dmgθ
+Relacionando o torque com o momento de inércia (
+𝐼
+𝑑
+I 
+d
+​
+ ) e a aceleração angular (
+𝛼
+α):
+
+𝜏
+=
+𝐼
+𝑑
+𝛼
+=
+𝐼
+𝑑
+𝑑
+2
+𝜃
+𝑑
+𝑡
+2
+τ=I 
+d
+​
+ α=I 
+d
+​
+  
+dt 
+2
+ 
+d 
+2
+ θ
+​
+ 
+Igualando as Equações (3) e (4), obtemos a equação do movimento harmônico simples:
+
+𝑑
+2
+𝜃
+𝑑
+𝑡
+2
++
+𝑚
+𝑔
+𝑑
+𝐼
+𝑑
+𝜃
+=
+0
+dt 
+2
+ 
+d 
+2
+ θ
+​
+ + 
+I 
+d
+​
+ 
+mgd
+​
+ θ=0
+A solução para essa equação é:
+
+𝜃
+(
+𝑡
+)
+=
+𝜃
+0
+cos
+⁡
+(
+𝜔
+𝑡
++
+𝜑
+)
+θ(t)=θ 
+0
+​
+ cos(ωt+φ)
+Onde 
+𝜔
+ω é a frequência angular, dada por:
+
+𝜔
+2
+=
+𝑚
+𝑔
+𝑑
+𝐼
+𝑑
+ω 
+2
+ = 
+I 
+d
+​
+ 
+mgd
+​
+ 
+E o período (
+𝑇
+T) é:
+
+𝜔
+=
+2
+𝜋
+𝑇
+ω= 
+T
+2π
+​
+ 
+𝑇
+=
+2
+𝜋
+𝐼
+𝑑
+𝑚
+𝑔
+𝑑
+T=2π 
+mgd
+I 
+d
+​
+ 
+​
+ 
+​
+ 
+O momento de inércia 
+𝐼
+𝑑
+I 
+d
+​
+  pode ser calculado pelo Teorema de Huygens-Steiner:
+
+𝐼
+𝑑
+=
+𝐼
+𝐶
+𝑀
++
+𝑚
+𝑑
+2
+I 
+d
+​
+ =I 
+CM
+​
+ +md 
+2
+ 
+Onde 
+𝐼
+𝐶
+𝑀
+I 
+CM
+​
+  é o momento de inércia em relação ao centro de massa e 
+𝑚
+m é a massa do corpo.
+
+Para uma barra metálica fina com largura 
+𝑎
+a e altura 
+𝑏
+b, o momento de inércia em relação ao centro de massa é:
+
+𝐼
+𝐶
+𝑀
+=
+1
+12
+𝑚
+(
+𝑎
+2
++
+𝑏
+2
+)
+I 
+CM
+​
+ = 
+12
+1
+​
+ m(a 
+2
+ +b 
+2
+ )
+Substituindo nas Equações (10) e (11), obtemos a fórmula para o período:
+
+𝑇
+=
+2
+𝜋
+1
+12
+𝑚
+(
+𝑎
+2
++
+𝑏
+2
+)
++
+𝑚
+𝑑
+2
+𝑚
+𝑔
+𝑑
+T=2π 
+12
+1
+​
+ m(a 
+2
+ +b 
+2
+ )+md 
+2
+ 
+​
+ mgd
+Ou de forma simplificada:
+
+𝑇
+=
+2
+𝜋
+1
+12
+(
+𝑎
+2
++
+𝑏
+2
+)
++
+𝑑
+2
+𝑔
+𝑑
+T=2π 
+12
+1
+​
+ (a 
+2
+ +b 
+2
+ )+d 
+2
+ 
+​
+ gd
+
+𝑇
+=
+2
+𝜋
+𝑘
++
+𝑑
+2
+𝑔
+𝑑
+T=2π 
+k+ 
+gd
+d 
+2
+ 
+​
+ 
+​
+ , onde 
+
+Conclusão: O período não depende da massa do pêndulo, e a relação entre o período e a distância 
+d do centro de massa ao eixo de rotação é complexa, com variações não triviais.
+
+
+
+
+
+
+
+4o mini
+
+
+
+
+

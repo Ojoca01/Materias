@@ -1,0 +1,1 @@
+define(["./Wm5Loader!"],(function(e){return e}));

@@ -1,0 +1,92 @@
+
+Título Provisório
+Plataforma Interativa para Visualização de Dados Urbanos como Ferramenta de Apoio às Políticas Públicas em Cidades Inteligentes
+
+Resumo
+(Escrever por último, com cerca de 250 palavras. Deve resumir objetivo, metodologia, resultados parciais e conclusões.)
+
+Capítulo 1 – Introdução
+
+1.1 Contextualização
+Vivemos em um cenário urbano cada vez mais complexo, onde os problemas relacionados à violência, fome, educação, saúde e mobilidade urbana demandam soluções integradas e tecnológicas. Neste contexto, surgem as cidades inteligentes, que utilizam dados e tecnologias para otimizar serviços e melhorar a qualidade de vida.
+
+1.2 Motivação
+A dificuldade de acesso à informação clara e objetiva sobre os principais problemas urbanos impede tanto a população quanto os gestores públicos de agirem de maneira estratégica. A possibilidade de consolidar dados públicos em mapas interativos e acessíveis oferece uma forma inovadora de entender e combater essas questões.
+
+1.3 Justificativa
+O uso de plataformas interativas torna os dados públicos mais acessíveis e compreensíveis, promovendo o engajamento cidadão e contribuindo para políticas públicas mais eficazes e transparentes.
+
+1.4 Objetivos
+Geral: Desenvolver o conceito de uma plataforma interativa que utilize dados públicos para mapear problemas urbanos e apoiar a criação de políticas públicas.
+Específicos:
+- Identificar e integrar dados públicos relevantes;
+- Exibir esses dados em mapas temáticos interativos;
+- Permitir filtragem por variáveis como gênero, idade, tipo de ocorrência;
+- Avaliar o impacto potencial em políticas públicas e cidadania.
+
+Capítulo 2 – Revisão Bibliográfica
+
+2.1 Cidades Inteligentes
+- Conceito, histórico e importância;
+- Exemplos nacionais (São José dos Campos, Curitiba, Florianópolis) e internacionais.
+
+2.2 Tecnologia e Sociedade
+- Internet das Coisas (IoT), Big Data, Inteligência Artificial;
+- Aplicações urbanas: mobilidade, saúde, segurança e educação.
+
+2.3 Plataformas Interativas de Dados Públicos
+- Ferramentas e portais de dados abertos no Brasil (ex: IBGE, DataSUS);
+- Visualização de dados e mapas interativos (ex: Mapbox, Leaflet, Tableau, Power BI).
+
+2.4 Uso de Dados na Formulação de Políticas Públicas
+- Como dados orientam ações governamentais;
+- Exigência de transparência e participação social.
+
+Capítulo 3 – Plano de Continuidade (TCC2)
+
+3.1 Desenvolvimento Técnico da Plataforma
+- Escolha das tecnologias (HTML, JavaScript, APIs de dados, bibliotecas de mapas);
+- Estrutura de backend (Node.js, banco de dados com dados georreferenciados).
+
+3.2 Integração dos Dados Públicos
+- Coleta e organização dos dados por tema (violência, saúde, educação);
+- Implementação de filtros e painéis interativos.
+
+3.3 Testes com Usuários e Avaliação
+- Prototipação da interface;
+- Aplicação de questionários ou entrevistas com cidadãos ou especialistas.
+
+3.4 Cronograma Previsto
+Etapa                         | Período
+------------------------------|-----------------
+Levantamento de dados        | Ago/2025
+Implementação inicial        | Set-Out/2025
+Testes e validação           | Nov/2025
+Escrita final do TCC2        | Dez/2025-Jan/26
+Apresentação                 | Fev/2026
+
+Capítulo 4 – Resultados Parciais e Considerações (Opcional)
+- Identificação de fontes de dados relevantes;
+- Avaliação inicial da viabilidade técnica da plataforma;
+- Reflexão sobre o impacto social do projeto;
+- Discussão sobre a importância da interatividade e visualização de dados em escala local.
+
+Referências Bibliográficas
+- ALMEIDA, J. Dados Abertos e Cidadania. São Paulo: Ed. Digital, 2020.
+- CASTELLS, M. A sociedade em rede. Paz e Terra, 1999.
+- IBGE. Portal de Dados. Disponível em: https://www.ibge.gov.br
+- ISO 37122:2019 – Sustainable cities and communities — Indicators for smart cities.
+
+- https://www.anahp.com.br/publicacoes/observatorio-anahp-2025/?gad_source=1&gad_campaignid=22480164706&gbraid=0AAAAACyQXICC5Y4qKwkSZYJXCKgkRCxJt&gclid=Cj0KCQjwxo_CBhDbARIsADWpDH7WGvWMXuHKAGNM4zM7bCFc8kWtkfNtE-SXqYWdPkGrvUsP-gFkB3EaAkKLEALw_wcB
+
+-https://geosemfronteiras.org/blog/mapas-coropleticos-um-guia-para-classificacao-de-dados/#:~:text=Afinal%2C%20o%20n%C3%BAmero%20de%20classes%20que%20voc%C3%AA,realmente%20depende%20do%20prop%C3%B3sito%20do%20seu%20mapa.
+
+-https://www.cnj.jus.br/sistemas/datajud/
+-https://www.gov.br/mj/pt-br/assuntos/sua-seguranca/seguranca-publica/estatistica
+-https://dados.mj.gov.br/dataset/sistema-nacional-de-estatisticas-de-seguranca-publica
+-https://mapasinterativos-geoportal-ibge.hub.arcgis.com/
+-
+-
+-
+-
+
