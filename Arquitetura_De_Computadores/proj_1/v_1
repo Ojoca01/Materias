@@ -1,0 +1,550 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+
+// ======================================================
+// ==================== DEFINES ==========================
+// ======================================================
+
+// ---------- MEMÓRIA ----------
+#define MEM_SIZE        (128 * 1024)   
+#define OFFSET          0b10000000000000000000000000000000
+#define WORD_SIZE       0b100
+
+// ---------- OPCODES ----------
+#define OPCODE_R        0b0110011
+#define OPCODE_LOAD     0b0000011
+#define OPCODE_STORE    0b0100011
+#define OPCODE_BRANCH   0b1100011
+#define OPCODE_LUI      0b0110111
+#define OPCODE_AUIPC    0b0010111
+#define OPCODE_JAL      0b1101111
+#define OPCODE_JALR     0b1100111
+#define OPCODE_SYSTEM   0b1110011
+#define OPCODE_IMM      0b0010011
+
+// ---------- FUNCT3 ----------
+
+// R / I base
+#define F3_ADD_SUB      0b000
+#define F3_SLL          0b001
+#define F3_SLT          0b010
+#define F3_SLTU         0b011
+#define F3_XOR          0b100
+#define F3_SRL_SRA      0b101
+#define F3_OR           0b110
+#define F3_AND          0b111
+
+// LOAD
+#define F3_LB           0b000
+#define F3_LH           0b001
+#define F3_LW           0b010
+#define F3_LBU          0b100
+#define F3_LHU          0b101
+
+// STORE
+#define F3_SB           0b000
+#define F3_SH           0b001
+#define F3_SW           0b010
+
+// BRANCH
+#define F3_BEQ          0b000
+#define F3_BNE          0b001
+#define F3_BLT          0b100
+#define F3_BGE          0b101
+#define F3_BLTU         0b110
+#define F3_BGEU         0b111
+
+// ---------- FUNCT7 ----------
+#define F7_BASE         0b0000000
+#define F7_SUB_SRA      0b0100000
+#define F7_M_EXTENSION  0b0000001
+
+// ---------- MÁSCARAS ----------
+#define MASK_OPCODE     0b1111111
+#define MASK_RD         0b11111
+#define MASK_FUNCT3     0b111
+#define MASK_FUNCT7     0b1111111
+
+// ---------- UTILITÁRIOS ----------
+#define REG_ZERO        0
+
+// ==================== GLOBAIS ====================
+
+// memória
+uint8_t *mem;
+
+// registradores
+uint32_t x[32];
+
+// labels
+const char* x_label[32] = {
+    "zero","ra","sp","gp","tp","t0","t1","t2",
+    "s0","s1","a0","a1","a2","a3","a4","a5",
+    "a6","a7","s2","s3","s4","s5","s6","s7",
+    "s8","s9","s10","s11","t3","t4","t5","t6"
+};
+
+// PC e controle
+uint32_t pc;
+uint32_t prox_pc;
+uint8_t run;
+
+// instrução
+uint32_t instrucao;
+
+// campos
+uint8_t opcode, funct3, funct7;
+uint8_t rs1, rs2, rd;
+uint32_t imm, uimm;
+
+// execução
+uint32_t resultado;
+uint32_t old_rs1;
+
+// arquivos
+FILE *input;
+FILE *output;
+
+// ==================== funcoes auxiliares que serao chamadas ====================
+
+// ==================== SIGN EXTEND ====================
+// função para estender o sinal de um valor com um número específico de bits para 32 bits, garantindo que os valores negativos sejam representados corretamente.
+
+int32_t sign_extend(uint32_t valor, int bits) {
+
+    uint32_t mask = 1u << (bits - 1);
+
+    return (int32_t)((valor ^ mask) - mask);
+}
+
+// ==================== FETCH ====================
+// funcao com logica para ler a próxima instrução do arquivo .hex e armazená-la em uma variável global ou estrutura de dados apropriada para decodificação.
+
+uint32_t fetch() {
+
+    uint32_t index = pc - OFFSET;
+
+    // =========================
+    // PROTEÇÃO DE MEMÓRIA
+    // =========================
+    if (index + (WORD_SIZE - 1) >= MEM_SIZE) {
+        printf("ERRO: PC fora da memoria: 0x%08x\n", pc);
+        run = 0;
+        return 0;
+    }
+
+    // =========================
+    // LEITURA LITTLE-ENDIAN
+    // =========================
+    return (uint32_t)mem[index] |
+          ((uint32_t)mem[index + 1] << 8) |
+          ((uint32_t)mem[index + 2] << 16) |
+          ((uint32_t)mem[index + 3] << 24);
+}
+// ==================== DECODE ====================
+// funcao com logicapara interpretar os bits da instrução lida e determinar o tipo de instrução (R, I, S, B, U, J) e os campos relevantes (opcode, funct3, funct7, rs1, rs2, rd, immediate).
+void decode() {
+
+    // =========================
+    // EXTRAÇÃO PADRÃO DOS CAMPOS
+    // =========================
+    opcode = instrucao & MASK_OPCODE;
+    rd     = (instrucao >> 7)  & MASK_RD;
+    funct3 = (instrucao >> 12) & MASK_FUNCT3;
+    rs1    = (instrucao >> 15) & MASK_RD;
+    rs2    = (instrucao >> 20) & MASK_RD;
+    funct7 = (instrucao >> 25) & MASK_FUNCT7;
+
+    old_rs1 = x[rs1];
+
+    // valores padrão
+    imm = 0;
+    uimm = 0;
+
+    // =========================
+    // DECODIFICAÇÃO POR TIPO
+    // =========================
+    switch(opcode) {
+
+        // =========================
+        // I-TYPE (LOAD + IMM + JALR)
+        // =========================
+        case OPCODE_LOAD:
+        case OPCODE_IMM:
+        case OPCODE_JALR:
+
+            imm  = sign_extend(instrucao >> 20, 12);
+            uimm = (instrucao >> 20) & MASK_RD;
+
+        break;
+
+        // =========================
+        // S-TYPE (STORE)
+        // =========================
+        case OPCODE_STORE:
+
+            imm = ((instrucao >> 7)  & MASK_RD) |
+                  ((instrucao >> 25) << 5);
+
+            imm = sign_extend(imm, 12);
+
+        break;
+
+        // =========================
+        // B-TYPE (BRANCH)
+        // =========================
+        case OPCODE_BRANCH:
+
+            imm = ((instrucao >> 8)  & 0b1111) << 1  |
+                  ((instrucao >> 25) & 0b111111) << 5  |
+                  ((instrucao >> 7)  & 0b1) << 11 |
+                  ((instrucao >> 31) & 0b1) << 12;
+
+            imm = sign_extend(imm, 13);
+
+        break;
+
+        // =========================
+        // U-TYPE (LUI / AUIPC)
+        // =========================
+        case OPCODE_LUI:
+        case OPCODE_AUIPC:
+
+            imm = instrucao & 0b11111111111111111111000000000000;
+
+        break;
+
+        // =========================
+        // J-TYPE (JAL)
+        // =========================
+        case OPCODE_JAL:
+
+            imm = ((instrucao >> 21) & 0b1111111111) << 1  |
+                  ((instrucao >> 20) & 0b1) << 11 |
+                  ((instrucao >> 12) & 0b11111111) << 12 |
+                  ((instrucao >> 31) & 0b1) << 20;
+
+            imm = sign_extend(imm, 21);
+
+        break;
+
+        // =========================
+        // R-TYPE
+        // =========================
+        case OPCODE_R:
+        break;
+
+        // =========================
+        // SYSTEM
+        // =========================
+        case OPCODE_SYSTEM:
+        break;
+
+        // =========================
+        // DEFAULT
+        // =========================
+        default:
+        break;
+    }
+}
+
+// ==================== CARREGAR HEX ====================
+void carregar_hex() {
+
+    uint32_t endereco = OFFSET;
+    uint32_t valor;
+
+    while (fscanf(input, "%x", &valor) != EOF) {
+
+        uint32_t index = endereco - OFFSET;
+
+        // =========================
+        // PROTEÇÃO DE MEMÓRIA
+        // =========================
+        if (index + (WORD_SIZE - 1) >= MEM_SIZE) {
+            printf("ERRO: overflow de memoria ao carregar HEX\n");
+            run = 0;
+            return;
+        }
+
+        // =========================
+        // ARMAZENAMENTO LITTLE-ENDIAN
+        // =========================
+        mem[index]     =  valor        & 0xFF;
+        mem[index + 1] = (valor >> 8)  & 0xFF;
+        mem[index + 2] = (valor >> 16) & 0xFF;
+        mem[index + 3] = (valor >> 24) & 0xFF;
+
+        endereco += WORD_SIZE;
+    }
+}
+
+
+/*========================= Inicio da BIBLIOTECA DE INSTRUÇÕES RISC-V, ao estilo poxin-vs, seguindo risbuj 
+ a funcao execute_print() usa lógica para executar a instrução decodificada, realizando as operações necessárias 
+ (aritméticas, lógicas, de memória, controle de fluxo, etc.) e atualizando os registradores e a memória conforme necessário.
+        // Tipo R (0110011) -> add, sub, sll, slt, sltu, xor, srl, sra, or, and
+        // Tipo I (0000011) -> load (lb, lh, lw, lbu, lhu) e immediate(0010011) (addi, slli, slti, sltiu, xori, srli/srai, ori, andi)
+        // Tipo S (0100011) -> store (sb, sh, sw)
+        // Tipo B (1100011) -> branch (beq, bne, blt, bge, bltu, bgeu)
+        // Tipo U (0110111/lui) e (0110011/auipc) -> operações com imediatos de 20 bits
+        // Tipo J (1101111/jal) e (1100111/jalr) -> controle de fluxo
+        // SYSTEM (1110011/ebreak) -> controle de execução
+//=========================*/
+
+void execute_print() {
+
+    prox_pc = pc + WORD_SIZE; // padrão
+
+//========================================================
+//====================== R TYPE ===========================
+//========================================================
+    if (opcode == OPCODE_R) {
+
+        switch (funct3) {
+
+        case F3_ADD_SUB:
+            if (funct7 == F7_BASE) { // add
+                resultado = x[rs1] + x[rs2];
+                fprintf(output,"0x%08x:add    %s,%s,%s     %s=0x%08x+0x%08x=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],
+                        x_label[rd],x[rs1],x[rs2],resultado);
+            }
+            else if (funct7 == F7_SUB_SRA) { // sub
+                resultado = x[rs1] - x[rs2];
+                fprintf(output,"0x%08x:sub    %s,%s,%s     %s=0x%08x-0x%08x=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],
+                        x_label[rd],x[rs1],x[rs2],resultado);
+            }
+            else if (funct7 == F7_M_EXTENSION) { // mul
+                resultado = x[rs1] * x[rs2];
+                fprintf(output,"0x%08x:mul    %s,%s,%s     %s=0x%08x*0x%08x=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],
+                        x_label[rd],x[rs1],x[rs2],resultado);
+            }
+        break;
+
+        case F3_SLL:
+            if (funct7 == F7_BASE) { // sll
+                resultado = x[rs1] << (x[rs2] & 31);
+                fprintf(output,"0x%08x:sll    %s,%s,%s     %s=0x%08x<<%u=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],
+                        x_label[rd],x[rs1],x[rs2]&31,resultado);
+            }
+            else if (funct7 == F7_M_EXTENSION) { // mulh
+                resultado = ((int64_t)(int32_t)x[rs1]*(int64_t)(int32_t)x[rs2])>>32;
+                fprintf(output,"0x%08x:mulh   %s,%s,%s     hi=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],resultado);
+            }
+        break;
+
+        case F3_SLT:
+            if (funct7 == F7_BASE) { // slt
+                resultado = (int32_t)x[rs1] < (int32_t)x[rs2];
+                fprintf(output,"0x%08x:slt    %s,%s,%s     %s=(0x%08x<0x%08x)=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],
+                        x_label[rd],x[rs1],x[rs2],resultado);
+            }
+            else if (funct7 == F7_M_EXTENSION) { // mulhsu
+                resultado = ((int64_t)(int32_t)x[rs1]*(uint64_t)x[rs2])>>32;
+                fprintf(output,"0x%08x:mulhsu %s,%s,%s     hi=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],resultado);
+            }
+        break;
+
+        case F3_SLTU:
+            if (funct7 == F7_BASE) { // sltu
+                resultado = x[rs1] < x[rs2];
+                fprintf(output,"0x%08x:sltu   %s,%s,%s     %s=(0x%08x<0x%08x)=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],
+                        x_label[rd],x[rs1],x[rs2],resultado);
+            }
+            else if (funct7 == F7_M_EXTENSION) { // mulhu
+                resultado = ((uint64_t)x[rs1]*(uint64_t)x[rs2])>>32;
+                fprintf(output,"0x%08x:mulhu  %s,%s,%s     hi=0x%08x\n",
+                        pc,x_label[rd],x_label[rs1],x_label[rs2],resultado);
+            }
+        break;
+
+        case F3_XOR:
+            if (funct7 == F7_BASE) { // xor
+                resultado = x[rs1] ^ x[rs2];
+            }
+            else if (funct7 == F7_M_EXTENSION) { // div
+                resultado = x[rs1] / x[rs2];
+            }
+        break;
+
+        case F3_SRL_SRA:
+            if (funct7 == F7_BASE) { // srl
+                resultado = x[rs1] >> (x[rs2] & 31);
+            }
+            else if (funct7 == F7_SUB_SRA) { // sra
+                resultado = (int32_t)x[rs1] >> (x[rs2] & 31);
+            }
+            else if (funct7 == F7_M_EXTENSION) { // divu
+                resultado = x[rs1] / x[rs2];
+            }
+        break;
+
+        case F3_OR:
+            if (funct7 == F7_BASE) { // or
+                resultado = x[rs1] | x[rs2];
+            }
+            else if (funct7 == F7_M_EXTENSION) { // rem
+                resultado = x[rs1] % x[rs2];
+            }
+        break;
+
+        case F3_AND:
+            if (funct7 == F7_BASE) { // and
+                resultado = x[rs1] & x[rs2];
+            }
+            else if (funct7 == F7_M_EXTENSION) { // remu
+                resultado = x[rs1] % x[rs2];
+            }
+        break;
+        }
+
+        if (rd != REG_ZERO) x[rd] = resultado;
+    }
+
+//========================================================
+//====================== I TYPE ===========================
+//========================================================
+    else if (opcode == OPCODE_IMM) {
+
+        switch(funct3) {
+
+        case F3_ADD_SUB: // addi
+            resultado = x[rs1] + imm;
+        break;
+
+        case F3_AND: // andi
+            resultado = x[rs1] & imm;
+        break;
+        }
+
+        if (rd != REG_ZERO) x[rd] = resultado;
+    }
+
+//========================================================
+//====================== BRANCH ===========================
+//========================================================
+    else if (opcode == OPCODE_BRANCH) {
+
+        int take = 0;
+
+        if (funct3 == F3_BEQ) take = (x[rs1] == x[rs2]);
+        if (funct3 == F3_BNE) take = (x[rs1] != x[rs2]);
+
+        if (take) prox_pc = pc + imm;
+
+        fprintf(output,"0x%08x:branch %s,%s,%d     (%d)\n",
+                pc,x_label[rs1],x_label[rs2],imm,take);
+    }
+}
+
+/*========================= Fim da BIBLIOETA DE INSTRUÇÕES RISC-V,
+ ao estilo do Poxim-V, incluindo as instruções básicas de cada tipo (R, I, S, B, U, J) e a extensão M para multiplicação e divisão. 
+ Instruções de controle de execução (ecall, ebreak, mret) e de acesso a 
+ CSRs (csrrw, csrrs, csrrc, csrrwi, csrrsi, csrrci) que também estão implementadas.*/
+
+// ==================== MAIN ====================
+int main(int argc, char* argv[]) {
+
+    // =========================
+    // ARGUMENTOS
+    // =========================
+    if (argc < 3) {
+        printf("Uso: %s input.hex output.out\n", argv[0]);
+        return 1;
+    }
+
+    // =========================
+    // ABERTURA DE ARQUIVOS
+    // =========================
+    input = fopen(argv[1], "r");
+    output = fopen(argv[2], "w");
+
+    if (input == NULL) {
+        printf("Erro ao abrir arquivo de entrada\n");
+        return 1;
+    }
+
+    if (output == NULL) {
+        printf("Erro ao abrir arquivo de saida\n");
+        fclose(input);
+        return 1;
+    }
+
+    // =========================
+    // MEMÓRIA
+    // =========================
+    mem = (uint8_t*) calloc(MEM_SIZE, 1);
+
+    if (mem == NULL) {
+        printf("Erro ao alocar memoria\n");
+        fclose(input);
+        fclose(output);
+        return 1;
+    }
+
+    // =========================
+    // REGISTRADORES
+    // =========================
+    for (int i = 0; i < 32; i++)
+        x[i] = 0;
+
+    // garantia explícita (nível prova)
+    x[REG_ZERO] = 0;
+
+    // =========================
+    // INICIALIZAÇÃO
+    // =========================
+    pc = OFFSET;
+    prox_pc = OFFSET;
+    run = 1;
+
+    // =========================
+    // CARREGAMENTO DO PROGRAMA
+    // =========================
+    carregar_hex();
+
+    if (!run) {
+        printf("Erro durante carregamento do HEX\n");
+        fclose(input);
+        fclose(output);
+        free(mem);
+        return 1;
+    }
+
+    // =========================
+    // LOOP PRINCIPAL
+    // FETCH -> DECODE -> EXECUTE -> UPDATE PC
+    // =========================
+    while (run) {
+
+        instrucao = fetch();     // 1. FETCH
+        if (!run) break;
+
+        decode();               // 2. DECODE
+
+        execute_print();        // 3. EXECUTE + PRINT
+
+        pc = prox_pc;           // 4. UPDATE PC
+
+        // segurança: manter x0 sempre 0
+        x[REG_ZERO] = 0;
+    }
+
+    // =========================
+    // FINALIZAÇÃO
+    // =========================
+    fclose(input);
+    fclose(output);
+    free(mem);
+
+    return 0;
+}

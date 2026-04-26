@@ -1,0 +1,273 @@
+#include <stdio.h> 
+#include <stdint.h>
+#include <stdlib.h>
+
+/*
+Estrutura do Projeto Simulador_Poxim-v 
+Objetivo:Criar um programa em C++ (usando estilo de C) que lê instruções em hexadecimal, decodifica bit a bit e imprime a representação correta no formato do simulador Poxim-V
+*/
+
+// ==================== VARIÁVEIS GLOBAIS ====================
+
+uint8_t *mem;
+uint32_t x[32];
+
+const char* x_label[32] = {
+    "zero","ra","sp","gp","tp","t0","t1","t2",
+    "s0","s1","a0","a1","a2","a3","a4","a5",
+    "a6","a7","s2","s3","s4","s5","s6","s7",
+    "s8","s9","s10","s11","t3","t4","t5","t6"
+};
+
+uint32_t pc;
+const uint32_t offset = 0x80000000;
+
+uint8_t run = 1;
+
+uint32_t instrucao;
+
+uint8_t opcode, funct3, funct7;
+uint8_t rs1, rs2, rd;
+uint32_t imm, uimm;
+
+uint32_t resultado;
+uint32_t prox_pc;
+
+uint32_t old_rs1, old_rs2;
+
+FILE* input;
+FILE* output;
+
+// ==================== FETCH ====================
+uint32_t fetch() {
+    uint32_t index = (pc - offset) >> 2;
+
+    if(index >= (32 * 1024 / 4)) {
+        printf("ERRO: PC fora da memoria: 0x%08x\n", pc);
+        run = 0;
+        return 0;
+    }
+
+    return ((uint32_t*)(mem))[index];
+}
+
+// ==================== DECODE ====================
+void decode() {
+    opcode = instrucao & 0b1111111;
+    rd     = (instrucao >> 7) & 0b11111;
+    funct3 = (instrucao >> 12) & 0b111;
+    rs1    = (instrucao >> 15) & 0b11111;
+    rs2    = (instrucao >> 20) & 0b11111;
+    funct7 = (instrucao >> 25);
+
+    imm  = instrucao >> 20;
+    uimm = (instrucao >> 20) & 0b11111;
+
+    old_rs1 = x[rs1];
+    old_rs2 = x[rs2];
+}
+
+// ==================== EXECUTE ====================
+void execute() {
+
+    prox_pc = pc + 4;
+
+    switch(opcode)
+    {
+
+        // ================= R TYPE =================
+        case 0b0110011:
+
+            switch(funct3){
+
+                case 0b000:
+                    if(funct7 == 0b0000000) resultado = x[rs1] + x[rs2]; // add
+                    if(funct7 == 0b1000000) resultado = x[rs1] - x[rs2]; // sub
+                    if(funct7 == 0b0000001) resultado = x[rs1] * x[rs2]; // mul
+                break;
+            }
+
+        break;
+
+        // ================= I TYPE =================
+        case 0b0010011:
+
+            switch(funct3){
+
+                case 0b000: // addi
+                    {
+                        int32_t simm = (int32_t)instrucao >> 20;
+                        resultado = x[rs1] + simm;
+                        imm = simm;
+                    }
+                break;
+
+                case 0b001: // slli
+                    if(funct7 == 0b0000000)
+                        resultado = x[rs1] << uimm;
+                break;
+            }
+
+        break;
+
+        // ================= LOAD/STORE =================
+        case 0b0100011: // sw
+        {
+            int32_t simm = ((instrucao >> 7) & 0x1F) | (((int32_t)instrucao >> 25) << 5);
+            uint32_t addr = x[rs1] + simm;
+
+            *(uint32_t*)&mem[addr - offset] = x[rs2];
+        }
+        break;
+
+        // ================= BRANCH =================
+        case 0b1100011: // blt
+        {
+            int32_t imm_b =
+                ((instrucao >> 7) & 0x1E) |
+                ((instrucao >> 20) & 0x7E0) |
+                ((instrucao << 4) & 0x800) |
+                ((int32_t)instrucao >> 19 & 0x1000);
+
+            if((int32_t)x[rs1] < (int32_t)x[rs2])
+                prox_pc = pc + imm_b;
+        }
+        break;
+
+        // ================= AUIPC =================
+        case 0b0010111:
+        {
+            uint32_t imm_u = instrucao & 0xFFFFF000;
+            resultado = pc + imm_u;
+        }
+        break;
+
+        // ================= JAL =================
+        case 0b1101111:
+        {
+            uint32_t imm20 =
+                ((instrucao >> 31) << 19) |
+                (((instrucao >> 12) & 0xFF) << 11) |
+                (((instrucao >> 20) & 1) << 10) |
+                ((instrucao >> 21) & 0x3FF);
+
+            int32_t simm = (imm20 & (1 << 19)) ? (imm20 | 0xFFF00000) : imm20;
+
+            resultado = pc + 4;
+            prox_pc = pc + (simm << 1);
+        }
+        break;
+
+        // ================= JALR =================
+        case 0b1100111:
+        {
+            int32_t simm = (int32_t)instrucao >> 20;
+            uint32_t target = (x[rs1] + simm) & ~1;
+
+            resultado = pc + 4;
+            prox_pc = target;
+        }
+        break;
+
+        // ================= SYSTEM =================
+        case 0b1110011:
+            if(funct3 == 0 && imm == 1) run = 0;
+        break;
+
+        default:
+            printf("opcode desconhecido: 0x%x\n", opcode);
+            run = 0;
+    }
+
+    if(rd != 0) x[rd] = resultado;
+}
+
+// ==================== PRINT ====================
+void print() {
+
+    switch(opcode) {
+
+        case 0b0010011:
+            if(funct3 == 0b000) // addi
+                fprintf(output,"0x%08x:addi   %s,%s,0x%x  %s=0x%08x+0x%x=0x%08x\n",
+                    pc,x_label[rd],x_label[rs1],imm,x_label[rd],old_rs1,imm,resultado);
+
+        break;
+
+        case 0b0010111: // auipc
+            fprintf(output,"0x%08x:auipc  %s,0x%05x\n",pc,x_label[rd],instrucao>>12);
+        break;
+
+        case 0b0100011: // sw
+            fprintf(output,"0x%08x:sw     %s,0x000(%s)\n",
+                pc,x_label[rs2],x_label[rs1]);
+        break;
+
+        case 0b1101111:
+            fprintf(output,"0x%08x:jal    %s\n",pc,x_label[rd]);
+        break;
+
+        case 0b1100111:
+            fprintf(output,"0x%08x:jalr   %s,%s\n",pc,x_label[rd],x_label[rs1]);
+        break;
+
+        case 0b1110011:
+            fprintf(output,"0x%08x:ebreak\n",pc);
+        break;
+    }
+}
+
+// ==================== PC ====================
+void update_pc() {
+    pc = prox_pc;
+}
+
+// ==================== HEX ====================
+void carregar_hex() {
+
+    uint32_t endereco = offset;
+    uint32_t valor;
+
+    while(fscanf(input, "%x", &valor) != EOF) {
+
+        mem[endereco - offset]     = (valor & 0xFF);
+        mem[endereco - offset + 1] = (valor >> 8) & 0xFF;
+        mem[endereco - offset + 2] = (valor >> 16) & 0xFF;
+        mem[endereco - offset + 3] = (valor >> 24) & 0xFF;
+
+        endereco += 4;
+    }
+}
+
+// ==================== MAIN ====================
+int main(int argc, char* argv[]) {
+
+    if(argc < 3) {
+        printf("Uso: %s input.hex output.out\n", argv[0]);
+        return 1;
+    }
+
+    input = fopen(argv[1], "r");
+    output = fopen(argv[2], "w");
+
+    mem = (uint8_t*) malloc(32 * 1024);
+
+    for(int i = 0; i < 32; i++) x[i] = 0;
+
+    pc = offset;
+
+    carregar_hex();
+
+    while(run) {
+
+        instrucao = fetch();
+        decode();
+        execute();
+        print();
+        update_pc();
+    }
+
+    fclose(input);
+    fclose(output);
+    return 0;
+}
