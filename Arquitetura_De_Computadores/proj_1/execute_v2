@@ -1,0 +1,55 @@
+void execute() {
+    prox_pc = pc + 4; 
+
+switch(opcode){ // OPCODE + FUNCT3 + FUNCT7 = INTRUCTION
+
+case 0x33: // R types And Multiply Extension
+         execute_Rtypes_MulExt();
+         break; 
+ case 0x13: // I types 
+         execute_itypes();
+         break; 
+ case 0x23: // Store types 
+         execute_Stypes();
+         break; 
+ case 0x03: // LOAD types 
+         execute_Ltypes();
+         break; 
+ case 0x63: // Brach types 
+         int cond = 0;
+         uint32_t target=pc=imm;
+         uint32_t next = pc+4;
+         
+         switch(funct3){
+         case 0x0:cond = (x[rs1]==x[rs2]);break; //BEQ
+         case 0x1:cond = (x[rs1]!=x[rs2]);break; //BNE
+         case 0x4:cond = ((int32_t)x[rs1]<(int32_t)x[rs2]);break; //BLT
+         case 0x5:cond = ((int32_t)x[rs1]>=(int32_t)x[rs2]);break; //BGE
+         case 0x6:cond = ((uint32_t)x[rs1]<(uint32_t)x[rs2]);break;  //BLTU
+         case 0x7:cond = ((uint32_t)x[rs1]>=(uint32_t)x[rs2]);break;  //BGEU
+          }
+          prox_pc = cond ? target : next;
+          break; 
+// JUMP types
+ case 0x6F: // JAL  
+         
+         break; 
+case 0x6F: // JALR
+         execute_jalr();
+         break; 
+// U_types 
+ case 0x17: // AUIPC types 
+         execute_AUIPCtypes();
+         break; 
+case 0x17: // AUIPC types 
+         execute_AUIPCtypes();
+         break; 
+//SYSTEM
+ case 0x73: 
+         // ecall
+         // ebreak
+         break; 
+  x[0]=0
+}         
+
+}
