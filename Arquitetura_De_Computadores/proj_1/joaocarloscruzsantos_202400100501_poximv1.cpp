@@ -133,54 +133,65 @@ void decode() {
     funct3 = (instrucao >> 12) & 0x7;
     rs1    = (instrucao >> 15) & 0x1F;
     rs2    = (instrucao >> 20) & 0x1F;
-    funct7 = (instrucao >> 25);
+    funct7 = (instrucao >> 25) & 0x7F;
 
     switch (opcode) {
 
+    // =========================
     // I-TYPE
+    // =========================
     case 0x13:
     case 0x03:
     case 0x67:
-        imm = sign_extend(instrucao >> 20, 12);
+        imm = sign_extend((instrucao >> 20) & 0xFFF, 12);
         break;
 
+    // =========================
     // S-TYPE (SW)
-    case 0x23:
-        imm = ((instrucao >> 7) & 0x1F) |
-              ((instrucao >> 25) << 5);
+    // =========================
+    case 0x23: {
+        uint32_t imm4_0  = (instrucao >> 7)  & 0x1F;
+        uint32_t imm11_5 = (instrucao >> 25) & 0x7F;
+
+        imm = (imm11_5 << 5) | imm4_0;
         imm = sign_extend(imm, 12);
         break;
+    }
 
-    // B-TYPE (BLT)
-    case 0x63: { // B-TYPE
+    // =========================
+    // B-TYPE (branches)
+    // =========================
+    case 0x63: {
+        uint32_t imm12   = (instrucao >> 31) & 0x1;
+        uint32_t imm11   = (instrucao >> 7)  & 0x1;
+        uint32_t imm10_5 = (instrucao >> 25) & 0x3F;
+        uint32_t imm4_1  = (instrucao >> 8)  & 0xF;
 
-    uint32_t imm12   = (instrucao >> 31) & 0x1;
-    uint32_t imm10_5 = (instrucao >> 25) & 0x3F;
-    uint32_t imm4_1  = (instrucao >> 8)  & 0xF;
-    uint32_t imm11   = (instrucao >> 7)  & 0x1;
+        imm = (imm12 << 12) |
+              (imm11 << 11) |
+              (imm10_5 << 5) |
+              (imm4_1 << 1);
 
-    imm = (imm12 << 12) |
-          (imm11 << 11) |
-          (imm10_5 << 5) |
-          (imm4_1 << 1);
+        imm = sign_extend(imm, 13);
+        break;
+    }
 
-    imm = sign_extend(imm, 13);
-
-    break;
-}
-
+    // =========================
     // U-TYPE
+    // =========================
     case 0x37: // LUI
     case 0x17: // AUIPC
-        imm = instrucao & 0xFFFFF000;
+        imm = (int32_t)(instrucao & 0xFFFFF000);
         break;
 
+    // =========================
     // J-TYPE (JAL)
+    // =========================
     case 0x6F: {
         uint32_t imm20    = (instrucao >> 31) & 0x1;
-        uint32_t imm10_1  = (instrucao >> 21) & 0x3FF;
-        uint32_t imm11    = (instrucao >> 20) & 0x1;
         uint32_t imm19_12 = (instrucao >> 12) & 0xFF;
+        uint32_t imm11    = (instrucao >> 20) & 0x1;
+        uint32_t imm10_1  = (instrucao >> 21) & 0x3FF;
 
         imm = (imm20 << 20) |
               (imm19_12 << 12) |
@@ -195,7 +206,6 @@ void decode() {
         imm = 0;
     }
 }
-
 // ======================================================
 // EXECUTE
 // ======================================================
@@ -227,9 +237,9 @@ void execute() {
 
         else if (funct3 == 0x1) { // SLLI
 
-            int shamt = (instrucao >> 20) & 0x1F;
-            int32_t result = x[rs1] << shamt;
-
+        uint32_t shamt = (instrucao >> 20) & 0x1F;
+        uint32_t result = ((uint32_t)x[rs1]) << shamt;
+            
             sprintf(instr, "slli   %s,%s,%d",
                     x_label[rd], x_label[rs1], shamt);
 
@@ -238,7 +248,7 @@ void execute() {
                 pc, instr,
                 x_label[rd], x[rs1], shamt, result);
 
-            x[rd] = result;
+            x[rd] = (uint32_t)result;
         }
         break;
 
@@ -473,8 +483,7 @@ case 0x33:
         int32_t ret = pc + 4;
         prox_pc = pc + imm;
 
-        sprintf(instr, "jal    %s,0x%05x",
-                x_label[rd], (imm >> 1) & 0xFFFFF);
+        sprintf(instr, "jal    %s,0x%05x",x_label[rd], (imm >> 1) & 0xFFFFF);
 
         fprintf(output,
             "0x%08x:%-26s pc=0x%08x,%s=0x%08x\n",
@@ -548,10 +557,11 @@ case 0x33:
     // EBREAK
     // =========================
     case 0x73:
-        fprintf(output, "0x%08x:ebreak", pc);
+        fprintf(output, "0x%08x:ebreak", pc); // nao colocar /n 
         run = 0;
         break;
     }
+    x[0] = 0;
 }
 // ======================================================
 // MAIN
@@ -596,8 +606,6 @@ int main(int argc, char* argv[]) {
         execute();
 
         pc = prox_pc;
-
-        x[0] = 0;
     }
 
     fclose(input);
