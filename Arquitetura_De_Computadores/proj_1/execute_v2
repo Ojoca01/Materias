@@ -33,8 +33,20 @@ case 0x33: // R types And Multiply Extension
           prox_pc = resp ? target : next;
           break; 
  case 0x13: // I types 
-         
-         break; 
+        switch(funct3){ 
+        // imediatos types padrão
+        case 0x0: { resp = rd = rs1 + imm ; break;} //ADDI
+        case 0x4: { resp = rd = rs1 ^ imm  ;break; } //XORI
+        case 0x6: { resp = rd = rs1 | imm  ;break; } //ORI
+        case 0x7: { resp = rd = rs1 & imm ;break; } //ANDI
+        case 0x1:if(imm[5:11]=0x00){ resp = rd = rs1 << imm[4:0] ;break; } //SHIFT LEFT LOGICAL (slli)
+        case 0x5:if(imm[5:11]=0x00){ resp = rd = rs1 >> imm[4:0] ;break; } //SHIFT RIgTH LOGICAL (srli)
+        case 0x5:if(imm[5:11]=0x20){ resp = rd = rs1 >> imm[4:0] ;break; } //SHIFT RIGTH ARTM* (srai)
+        case 0x2: { resp = rd = (rs1 < imm)?1:0 ;break; } /SET LESS THAN (slti)
+        case 0x3: { resp = rd = (rs1 < imm)?1:0 ;break; } //SER LESS THAN (u) -> (sltiu)
+          }
+          prox_pc = resp ? target : next;
+          break; 
  case 0x23: // Store types 
          execute_Stypes();
          break; 
