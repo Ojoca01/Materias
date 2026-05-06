@@ -593,7 +593,8 @@ int main(int argc, char* argv[]) {
 
     while (run) {
 
-        if (contador++ > 100000) {
+     // proteção contra loop infinito
+        if (contador++ > 1000000) {
             printf("STOP: limite de instrucoes atingido\n");
             break;
         }
