@@ -1,0 +1,9 @@
+Alunos(grupo) : JOÃO CARLOS CRUZ SANTOS
+		CAUET MENDES FRANCA DE AGUIAR
+
+Host|endpoint(RDS): database-aulaengdados-1.c7tpsyn9kbms.us-east-1.rds.amazonaws.com
+Porta: 5432
+Usuário: professor
+Senha: professor
+
+link do video: https://drive.google.com/file/d/1AjcBNTzQmI4dsnvtfVuk-e9EePoZNnie/view?usp=sharing
