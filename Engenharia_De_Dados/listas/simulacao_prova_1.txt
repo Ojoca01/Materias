@@ -1,0 +1,85 @@
+SET search_path TO eventos;
+-- 1. Liste o login dos usuários cadastrados a partir de década de 1970, ordenados pelo e-mail de forma crescente.
+
+SELECT login
+FROM usuario
+WHERE data_cadastro >= DATE '1970-01-01'
+ORDER BY email ASC;
+
+
+-- 2. Para cada evento cadastrado, liste o e-mail dos clientes que compraram um ingresso para o evento, o e-mail dos organizadores que organizaram a evento e o título do evento, somete dos eventos os quais a empresa é ‘COL’.
+
+SELECT uc.email, uo.email, e.titulo
+FROM evento e
+JOIN organizacao og USING(id_evento)
+JOIN organizador o USING(id_organizador)
+JOIN usuario uo ON uo.login = o.login
+JOIN ingresso i USING(id_evento)
+JOIN cliente c USING(id_cliente)
+JOIN usuario uc ON uc.login = c.login
+WHERE e.empresa = 'COL';
+
+
+-- 3. Liste o título da evento e o título da seu evento anterior, somente daqueles eventos que possuem evento anterior.
+
+SELECT e.titulo, ev.titulo
+FROM evento e
+JOIN evento ev
+ON e.evento_anterior = ev.id_evento;
+
+
+-- 4. Liste o login e a empresa dos organizadores que não possuem organização cadastrada
+
+SELECT u.login, o.empresa
+FROM organizador o
+JOIN usuario u USING(login)
+LEFT JOIN organizacao og USING(id_organizador)
+WHERE og.id_organizador IS NULL;
+
+
+-- 5. Liste o título do evento, o id do evento anterior e média do valor dos ingressos dos eventos.
+
+SELECT e.titulo, e.evento_anterior, AVG(i.valor_ingresso)
+FROM evento e
+JOIN ingresso i USING(id_evento)
+GROUP BY e.id_evento, e.titulo, e.evento_anterior;
+
+
+-- 6. Liste o id do organizador e o id da empresa, porém considerando somente os organizadores os quais organizaram eventos que possuírem menos de 4 ingressos cadastrados
+
+SELECT o.id_organizador, o.empresa
+FROM organizador o
+JOIN organizacao og USING(id_organizador)
+JOIN ingresso i USING(id_evento)
+GROUP BY o.id_organizador, o.empresa
+HAVING COUNT(i.id_cliente) < 4;
+
+
+-- 7. Para cada organizador que organizou um evento, é possível calcular a média do valor dos ingressos, agrupando pelo id do organizador (vamos chamar de media_organizador). Além disso, é possível também calcular a média do valor dos ingressos, agrupando pela empresa (vamos chamar de media_empresa). Com essas informações, liste o id do organizador, a media_organizador, o id da empresa, a media_empresa.
+
+SELECT 
+    mo.id_organizador,
+    mo.media_organizador,
+    me.id_empresa,
+    me.media_empresa
+FROM
+(
+    SELECT 
+        o.id_organizador,
+        o.empresa AS id_empresa,
+        AVG(i.valor_ingresso) AS media_organizador
+    FROM organizador o
+    JOIN organizacao og USING(id_organizador)
+    JOIN ingresso i USING(id_evento)
+    GROUP BY o.id_organizador, o.empresa
+) mo
+JOIN
+(
+    SELECT
+        e.empresa AS id_empresa,
+        AVG(i.valor_ingresso) AS media_empresa
+    FROM evento e
+    JOIN ingresso i USING(id_evento)
+    GROUP BY e.empresa
+) me
+USING(id_empresa);
