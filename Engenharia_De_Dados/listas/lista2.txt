@@ -1,0 +1,49 @@
+Exercícios
+
+SQL - Consultas - JOIN
+
+Questões
+
+1 - Esquema universidade
+1.1 Liste o nome das disciplinas que possuem turmas. - INNER JOIN
+1.2 Liste o nome do estudante e o nome de cada disciplina das turmas que ele está
+cursando. - INNER JOIN
+1.3 Liste o nome do aluno e o nome de seu orientador. - INNER JOIN
+1.4 Considerando todas as turmas, liste o nome do professor, o nome da disciplina que
+ele está lecionando, além disso liste os nomes de todos os alunos cursando essas turmas. -
+INNER JOIN
+1.5 Liste o nome da disciplina e o nome do seu pré-requisito. - INNER JOIN
+1.6 Liste o nome do professor e o nome do seu chefe. O chefe de um professor é o
+chefe do departamento ao qual ele faz parte. - INNER JOIN
+1.7 Liste o nome da disciplina, número da turma e o nome do professor das disciplinas
+que não são pré-requisito - OUTER JOIN
+1.8 Liste os nomes de todos os alunos e os nomes dos orientadores, inclusive os alunos
+sem orientador. - OUTER JOIN
+1.9 Liste os nome dos professores e os nomes de seus orientandos (alunos que são
+orientados), inclusive os professores sem orientandos. - OUTER JOIN
+1.10 Liste os nomes de todos os alunos e os nomes dos professores, independente da
+orientação. - OUTER JOIN
+1.11 Liste os nomes dos professores que não lecionam turmas. - OUTER JOIN
+1.12 Liste o nome das disciplinas das turmas que não tem alunos cursando. - OUTER
+JOIN
+1.13 Refaça a consulta 1.7 da atividade 4, usando OUTER JOIN - OUTER JOIN
+1.14 Refaça a consulta 1.8 da atividade 4, usando JOIN - INNER JOIN
+1.15 Refaça a consulta 1.9 da atividade 4, usando OUTER JOIN - OUTER JOIN
+
+
+
+2 - Esquema - hospital/clinica (Há questões para usar o comando LIKE nesse exercício)
+2.1 Listar o CPF e sobrenome de todos os usuários que possuem a sílaba “sa" em seu
+sobrenome.
+2.2 Listar a quantidade de pessoas que possuem sobrenome com a inicial “S”.
+2.3 Listar o nome e CPF de todos os pacientes. - INNER JOIN
+2.4 Listar a soma de todos os salários dos médicos, porém apenas os que possuem
+cadastro ativo. - INNER JOIN
+2.5 Listar o nome e CPF dos pacientes, seguido do nome e CPF dos seus acompanhantes.
+- INNER JOIN
+2.6 Listar o nome e CPF de todos os pacientes que realizaram consulta. - INNER JOIN
+
+2.7 Listar o nome, CPF e número de prontuário de todos os pacientes que realizaram
+consulta e não houve prescrição de medicamento. - OUTER JOIN
+2.8 Listar o nome, CPF, número de prontuário e o nome do medicamento de todos os
+pacientes que realizaram consulta e houve prescrição de medicamento. - OUTER JOIN
