@@ -33,7 +33,7 @@ uint32_t pc;
 uint64_t mtime = 0;
 uint64_t mtimecmp = 0;
 
-// Variáveis para o delay de 1 instrução (Pipeline sim)
+// Variáveis para o delay de hardware
 uint8_t msip_delay = 0;
 uint8_t msip_val = 0;
 uint8_t uart_delay = 0;
@@ -43,7 +43,7 @@ FILE* f_saida = NULL;
 
 const char* regs[32] = { "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5", "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6" };
 
-// Variáveis globais extraídas para simplificar as etapas de Decode e Execute
+// Variáveis globais de Decode/Execute
 uint8_t run = 1;
 uint32_t instruction;
 uint8_t opcode, rd, funct3, rs1, rs2, funct7;
@@ -89,9 +89,8 @@ void trap(uint32_t cause, uint32_t epc, uint32_t tval, int is_interrupt) {
     mstatus_val = (mstatus_val & ~(1 << 7)) | (mie << 7);
     mstatus_val &= ~(1 << 3);
 
-    // NOVO: Salva o modo anterior no MPP (Machine Mode = 3)
-    mstatus_val &= ~(3 << 11); // Limpa os bits 11 e 12
-    mstatus_val |= (3 << 11);  // Define bits 11 e 12 como 1 (gera o 0x1800)
+    mstatus_val &= ~(3 << 11); 
+    mstatus_val |= (3 << 11);  
 
     csr[CSR_MSTATUS] = mstatus_val;
 
@@ -119,10 +118,8 @@ int mem_write(uint32_t addr, int size, uint32_t val) {
         }
         return 1;
     } else if (addr >= UART_BASE && addr < UART_BASE + UART_SIZE) {
-        if (addr == UART_BASE + 1) {
-            // CORREÇÃO: Removido o acionamento do uart_delay aqui para evitar interrupção precoce
-        } else if (addr == UART_BASE + 0) {
-            uart_delay = 1; // CORREÇÃO: Alterado de 2 para 1 para alinhar o ciclo do pipeline
+        if (addr == UART_BASE + 0) {
+            uart_delay = 2; // CORREÇÃO: Atraso correto de 2 ciclos
         }
         return 1;
     } else if (addr >= CLINT_BASE && addr < CLINT_BASE + CLINT_SIZE) {
@@ -140,7 +137,9 @@ int mem_write(uint32_t addr, int size, uint32_t val) {
         }
         return 1;
     } else if (addr >= PLIC_BASE && addr < PLIC_BASE + PLIC_SIZE) {
-        // PLIC complete foi removido daqui para ler e limpar no read_mem
+        if (addr == 0x0C200004 && size == 4) {
+            csr[CSR_MIP] &= ~0x800; // Limpa interrupção PLIC
+        }
         return 1;
     }
     return 0;
@@ -155,20 +154,25 @@ int mem_read(uint32_t addr, int size, uint32_t* val) {
         *val = temp;
         return 1;
     } else if (addr >= UART_BASE && addr < UART_BASE + UART_SIZE) {
-        if (addr == UART_BASE + 5) { // LSR: Line Status Register
+        if (addr == UART_BASE + 5) { 
             if (rx_index < 23) {
-                *val = 0x61; // TX/THR Empty (0x60) + RX Data Ready (0x01)
+                *val = 0x61; 
             } else {
-                *val = 0x60; // TX/THR Empty (0x60) e sem dados no RX
+                *val = 0x60; 
             }
-        } else if (addr == UART_BASE + 0) { // RX (Leitura)
+        } else if (addr == UART_BASE + 0) { 
             if (rx_index < 23) {
                 *val = rx_string[rx_index++];
             } else {
                 *val = 0;
             }
         } else if (addr == UART_BASE + 2) { 
-            *val = 1; 
+            // CORREÇÃO: IIR responde corretamente à pendência de interrupção
+            if (csr[CSR_MIP] & 0x800) {
+                *val = 4;
+            } else {
+                *val = 1;
+            }
         } else {
             *val = 0;
         }
@@ -187,7 +191,6 @@ int mem_read(uint32_t addr, int size, uint32_t* val) {
     } else if (addr >= PLIC_BASE && addr < PLIC_BASE + PLIC_SIZE) {
         if (addr == 0x0C200004) {
             *val = 10; 
-            csr[CSR_MIP] &= ~0x800; // NOVO: Limpa a interrupção pendente do PLIC assim que ela é lida (Claimed)
         } else {
             *val = 0;
         }
@@ -256,7 +259,7 @@ int execute() {
                 sprintf(eq, "%s=0x%08x*0x%08x=0x%08x", regs[rd], x[rs1], x[rs2], res); 
             } else if (funct3 == 1 && funct7 == 0) { 
                 strcpy(mnem, "sll"); uint32_t shamt = x[rs2] & 0x1F; res = x[rs1] << shamt; 
-                sprintf(eq, "%s=0x%08x<<%u=0x%08x", regs[rd], x[rs1], shamt, res); // Ajustado %u
+                sprintf(eq, "%s=0x%08x<<%u=0x%08x", regs[rd], x[rs1], shamt, res); 
             } else if (funct3 == 1 && funct7 == 0x01) { 
                 strcpy(mnem, "mulh"); int64_t m = (int64_t)(int32_t)x[rs1] * (int32_t)x[rs2]; res = m >> 32;
                 sprintf(eq, "%s=0x%08x*0x%08x=0x%08x", regs[rd], x[rs1], x[rs2], res); 
@@ -281,10 +284,10 @@ int execute() {
                 sprintf(eq, "%s=0x%08x/0x%08x=0x%08x", regs[rd], x[rs1], x[rs2], res);
             } else if (funct3 == 5 && funct7 == 0) { 
                 strcpy(mnem, "srl"); uint32_t shamt = x[rs2] & 0x1F; res = x[rs1] >> shamt;
-                sprintf(eq, "%s=0x%08x>>%u=0x%08x", regs[rd], x[rs1], shamt, res); // Ajustado %u
+                sprintf(eq, "%s=0x%08x>>%u=0x%08x", regs[rd], x[rs1], shamt, res);
             } else if (funct3 == 5 && funct7 == 0x20) { 
                 strcpy(mnem, "sra"); uint32_t shamt = x[rs2] & 0x1F; res = (int32_t)x[rs1] >> shamt; 
-                sprintf(eq, "%s=0x%08x>>>%u=0x%08x", regs[rd], x[rs1], shamt, res); // Ajustado %u e >>>
+                sprintf(eq, "%s=0x%08x>>>%u=0x%08x", regs[rd], x[rs1], shamt, res);
             } else if (funct3 == 5 && funct7 == 0x01) { 
                 strcpy(mnem, "divu"); if (x[rs2] == 0) res = 0xFFFFFFFF; else res = x[rs1] / x[rs2]; 
                 sprintf(eq, "%s=0x%08x/0x%08x=0x%08x", regs[rd], x[rs1], x[rs2], res); 
@@ -328,9 +331,10 @@ int execute() {
                 if (funct7 == 0) { 
                     strcpy(mnem, "srli"); res = x[rs1] >> shamt; sprintf(eq, "%s=0x%08x>>%u=0x%08x", regs[rd], x[rs1], shamt, res);
                 } else if (funct7 == 0x20) { 
-                    strcpy(mnem, "srai"); res = (int32_t)x[rs1] >> shamt; sprintf(eq, "%s=0x%08x>>>%u=0x%08x", regs[rd], x[rs1], shamt, res); // Ajustado para >>>
+                    strcpy(mnem, "srai"); res = (int32_t)x[rs1] >> shamt; sprintf(eq, "%s=0x%08x>>>%u=0x%08x", regs[rd], x[rs1], shamt, res);
                 } else illegal = 1;
-            } else if(funct3 == 6) {
+            }
+            else if(funct3 == 6) {
                 strcpy(mnem, "ori"); sprintf(ops, "%s,%s,0x%03x", regs[rd], regs[rs1], imm_i & 0xFFF);
                 res = x[rs1] | imm_i; sprintf(eq, "%s=0x%08x|0x%08x=0x%08x", regs[rd], x[rs1], imm_i, res);
             } else if(funct3 == 7) {
@@ -397,7 +401,7 @@ int execute() {
             break;
         }
 
-        case 0x63: { // B-Type com chaves protetoras para o escopo do g++
+        case 0x63: { // B-Type
             sprintf(ops, "%s,%s,0x%03x", regs[rs1], regs[rs2], (imm_b >> 1) & 0xFFF);
             uint8_t cond = 0;
             if(funct3 == 0) { 
@@ -478,7 +482,6 @@ int execute() {
                     mstatus_val = (mstatus_val & ~(1 << 3)) | (mpie << 3);
                     mstatus_val |= (1 << 7);
                     
-                    // NOVO: Limpa o MPP ao retornar (define para 0)
                     mstatus_val &= ~(3 << 11); 
 
                     csr[CSR_MSTATUS] = mstatus_val;
@@ -533,7 +536,6 @@ int execute() {
     return 0;
 }
 
-// ass:. João Carlos Cruz Santos , fiz pensando no funcionamento padrão de um processador de buscar-> decodifiacar-> executar -> acessar memoria -> e repetir tudo de novo
 int main(int argc, char* argv[]) {
     if (argc < 3) {
         printf("Uso: ./simulador entrada.hex saida.out\n");
@@ -548,6 +550,8 @@ int main(int argc, char* argv[]) {
     pc = RAM_BASE;
 
     while (run) {
+        csr[CSR_MTVAL] = 0;
+
         // Processar os delays para gerar interrupções de hardware/timer
         if (msip_delay > 0) {
             msip_delay--;
@@ -559,48 +563,43 @@ int main(int argc, char* argv[]) {
         if (uart_delay > 0) {
             uart_delay--;
             if (uart_delay == 0) {
-                csr[CSR_MIP] |= 0x800;
+                csr[CSR_MIP] |= 0x800; // Levanta a interrupção externa imediatamente
             }
         }
 
-        // Verificação se pode executar interrupções pendentes
-        if (csr[CSR_MSTATUS] & 0x08) {
-            if (mtime >= mtimecmp) csr[CSR_MIP] |= 0x80;
-            else csr[CSR_MIP] &= ~0x80;
+        // Atualiza o bit de Timer pendente antes de avaliar as prioridades
+        if (mtime >= mtimecmp) csr[CSR_MIP] |= 0x80;
+        else csr[CSR_MIP] &= ~0x80;
 
+        // Verificação se pode executar interrupções pendentes (Prioridade: Externa > Software > Timer)
+        if (csr[CSR_MSTATUS] & 0x08) {
             if ((csr[CSR_MIE] & 0x800) && (csr[CSR_MIP] & 0x800)) {
                 trap(0x8000000b, pc, 0, 1);
-                continue;
-            }
-            if ((csr[CSR_MIE] & 0x80) && (csr[CSR_MIP] & 0x80)) {
-                trap(0x80000007, pc, 0, 1);
                 continue;
             }
             if ((csr[CSR_MIE] & 0x08) && (csr[CSR_MIP] & 0x08)) {
                 trap(0x80000003, pc, 0, 1);
                 continue;
             }
+            if ((csr[CSR_MIE] & 0x80) && (csr[CSR_MIP] & 0x80)) {
+                trap(0x80000007, pc, 0, 1);
+                continue;
+            }
         }
 
-        // Fetch (Busca na memória)
         if (!mem_read(pc, 4, &instruction)) {
-            trap(1, pc, pc, 0);
+            trap(1, pc, 0, 0);
             continue;
         }
 
         mtime++;
-
-        // decode
         decode();
 
-        // execute
         if (execute()) {
-            // pc
             pc = next_pc;
         }
     }
 
-    // close
     if (f_saida) {
         fclose(f_saida);
     }

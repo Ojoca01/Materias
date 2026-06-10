@@ -98,9 +98,7 @@ sa_inner:
     lw t5, 0(t4)      # t5 = array[j]
     lw t6, 4(t4)      # t6 = array[j+1]
 
-    # SOLUÇÃO DO TRAVAMENTO: 
-    # Em vez de 'ble t5, t6, sa_no_swap' (que causava loop eterno por instrução ilegal),
-    # usamos 'bge t6, t5'. Se o elemento da direita for maior ou igual ao da esquerda,
+    # Se o elemento da direita for maior ou igual ao da esquerda,
     # eles já estão na ordem crescente correta, então pula a troca.
     bge t6, t5, sa_no_swap
 
@@ -234,19 +232,26 @@ print_newline_and_end:
 
 main_end:
     # Epílogo: Restaura registradores salvos na pilha
+    # BUG CORRIGIDO: era 'sw' (escrita), deve ser 'lw' (leitura/restauração)
     lw ra, 28(sp)
     lw s0, 24(sp)
-    sw s1, 20(sp)
-    sw s2, 16(sp)
-    sw s3, 12(sp)
-    sw s4, 8(sp)
+    lw s1, 20(sp)
+    lw s2, 16(sp)
+    lw s3, 12(sp)
+    lw s4, 8(sp)
     addi sp, sp, 32
 
     # Interrupção de parada limpa para o simulador do Poxim-V
     ebreak
 
+# =============================================================================
 # Section de Dados e Alocação de Memória
-.section .data
+# BUG CORRIGIDO: buffers movidos de .data (ROM) para .bss (RAM gravável).
+# No Poxim-V, .data é somente-leitura após a carga. A função scanf precisa
+# escrever em input_str, e sort_array/print_int precisam escrever em
+# num_buffer e digits_buf — portanto todos devem estar em .bss.
+# =============================================================================
+.section .bss
 
 input_str:
     .zero 4000         # Espaço para armazenar a string bruta lida da UART
@@ -256,3 +261,5 @@ num_buffer:
 
 digits_buf:
     .zero 16           # Buffer temporário para inversão de dígitos no print
+
+
