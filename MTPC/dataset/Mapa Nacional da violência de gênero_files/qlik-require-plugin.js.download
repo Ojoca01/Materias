@@ -1,1 +1,0 @@
-define({load:function(o,i,n){function r(o){n.error&&n.error(o)}window.qlikMashupLoader.promise=window.qlikMashupLoader.promise||window.qlikMashupLoader(),window.qlikMashupLoader.promise.then((function(){i(["qlik"],(function(o){n(o)}),r)})).catch(r)}});
