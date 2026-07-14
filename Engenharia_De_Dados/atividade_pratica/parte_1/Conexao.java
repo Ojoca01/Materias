@@ -3,6 +3,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Conexao {
+// como compilar e executar
 // javac -cp ".;postgresql-42.7.2.jar" *.java
 // java -cp ".;postgresql-42.7.2.jar" Main
     private static final String URL =
